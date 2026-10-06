@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vlaams Sözlük</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --zemin: #FAF8F4;
+            --metin: #1F1B16;
+            --vurgu: #B3261E;
+            --cizgi: #D9D3C7;
+        }
+        body {
+            background-color: var(--zemin);
+            color: var(--metin);
+            font-family: 'Inter', sans-serif;
+            max-width: 720px;
+            margin: 4rem auto;
+            padding: 0 1.5rem;
+        }
+        .baslik {
+            font-family: 'Source Serif 4', serif;
+            font-size: 2.1rem;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+        .alt { opacity: 0.62; margin-bottom: 1.6rem; }
+        .arama-kutusu {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--cizgi);
+            border-radius: 6px;
+            background: #FFFFFF;
+            font-size: 1rem;
+        }
+        button {
+            background: var(--vurgu);
+            color: #FFFFFF;
+            border: none;
+            padding: 0 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .sonuc-karti {
+            background: #FFF;
+            border: 1px solid var(--cizgi);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        .kelime {
+            font-family: 'Source Serif 4', serif;
+            font-size: 2.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--vurgu);
+        }
+    </style>
+</head>
+<body>
+    <div class="baslik">Vlaams Sözlük</div>
+    <div class="alt">Felemenkçe, Türkçe ve İngilizce — kelime ya da cümle arayın.</div>
+
+    <div class="arama-kutusu">
+        <input type="text" id="girdi" placeholder="lopen · koşmak · run...">
+        <button onclick="araKelime()">Ara</button>
+    </div>
+
+    <div id="sonucAlani"></div>
+
+    <script>
+        async function araKelime() {
+            const val = document.getElementById('girdi').value.trim();
+            const alan = document.getElementById('sonucAlani');
+            if (!val) return;
+
+            alan.innerHTML = "<p>⏳ Aranıyor...</p>";
+
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(val)}&mod=vl`);
+                const data = await res.json();
+
+                if (res.ok) {
+                    alan.innerHTML = `
+                        <div class="sonuc-karti">
+                            <div class="kelime">${data.query}</div>
+                            <p><strong>1. Anlamı (TR):</strong> ${data.translation}</p>
+                            <p><strong>Artikel:</strong> ${data.artikel}</p>
+                        </div>
+                    `;
+                } else {
+                    alan.innerHTML = `<p style="color:var(--vurgu);">Hata: ${data.error}</p>`;
+                }
+            } catch (e) {
+                alan.innerHTML = `<p style="color:var(--vurgu);">Bağlantı hatası oluştu.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
